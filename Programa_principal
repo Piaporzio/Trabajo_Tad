@@ -1,0 +1,509 @@
+from datetime import *
+import os
+from TAD_LISTADO import *
+from TAD_COLA import *
+
+#Listado de prueba de los posibles puntos de distribucion
+locaciones=["La Plata", "Berisso", "Gonnet", "City Bell", "Villa Elisa", "Varela"]
+
+#Definicion de la funcion para imprimir los datos de un camion 
+def imprimirCamion(camion):
+
+    #Se imprimen los datos con la funcion ver 
+    print("Placa: ", verPlaca(camion))
+    print("Origen: ", locaciones[verOrigen(camion)-1])
+    print("Destino: ", locaciones[verDestino(camion)-1])
+    print("Hora de Salida: ", verhSalida(camion))
+
+    #En caso de que el camion no haya llegado a destino se lo notifica con un mensaje 
+    if (verhLlegada(camion) == 0):
+        print("Hora de Llegada: No llego aun")
+
+    #Si el camion ya ha llegado a destino, se imprime la hora de llegada del mismo
+    else:
+        print("Hora de Llegada: ", verhLlegada(camion))
+    
+    print("Tiempo estimado: ", vertEstimado(camion))
+
+    #En caso de que el camion no haya llegado se notifica que todavia no se ha calculado el tiempo real 
+    if (vertReal(camion) == 0):
+        print("Tiempo de viaje real: No llego aun")
+
+    #Si el camion ya ha llegado a destino, se imprime el tiempo total de viaje del mismo
+    else:
+        print("Tiempo de Viaje: ", vertReal(camion))
+    print("==========================")
+
+#Definicion de la funcion para limpiar la pantalla 
+def limpiarPantalla():
+    os.system('cls' if os.name=='nt' else 'clear')
+
+#Definicion de la funcion para ingresar hora, minutos y segundos por separado y concatenarlos 
+def ingresarHora (): 
+    #CONTROL DE HORARIOS
+    h=int(input("Hora/s: "))
+    m=int(input("Minuto/s: "))
+    tiempo=timedelta(hours=h, minutes=m)
+    return tiempo
+
+#Definicion de la funcion para registrar la salida de un camion
+def salidaDeCamion(listado_camiones): 
+
+    #se crea un nuevo camion 
+    camion=crearCamion()
+
+    #se solicita al usuario ingresar los datos del camion por salir
+    print("Ingrese los datos del camion por salir")
+    placa=input("Placa: ")
+
+    #variable para corroborar que se haya encontrado el origen
+    bandera=False
+    #mientras no se haya encontrado el origen se repite el proceso 
+    while (bandera==False):
+        #se recorre el listado de locaciones 
+        for i in range (0, len(locaciones)):
+            #se imprimen todas los posibles puntos de distribucion 
+            print(i+1, ". ", locaciones[i])
+        try: 
+            #se registra la opcion de origen ingresada por el usuario 
+            origen=int(input("Ingrese el origen deseado: "))
+            if (origen<=len(locaciones) and origen>0):
+                #si el origen coincide con alguna de los puntos de distribucion se actualiza la variable de control
+                bandera=True
+            else:
+                #si la opcion es invalida, se solicita que se vuelva a ingresar
+                limpiarPantalla()
+                print("Ingrese una opcion valida")
+        except ValueError: 
+            limpiarPantalla()
+            print("Ingrese un numero valido")  
+    #variable para corroborar que se haya encontrado el destino
+    bandera=False 
+    #mientras no se haya encontrado el destino se repite el proceso
+    while (bandera==False):
+        #se recorre el listado de locaciones 
+        for i in range (0, len(locaciones)):
+            #se imprimen todas los posibles puntos de distribucion 
+            print(i+1, ". ", locaciones[i])
+        try: 
+            #se registra la opcion de destino ingresada por el usuario
+            destino=int(input("Ingrese el destino deseado: "))
+            if (destino<=len(locaciones) and destino>0):
+                #si el destino coincide con alguna de los puntos de distribucion se actualiza la variable de control
+                bandera=True
+            else:
+                #si la opcion es invalida, se solicita que se vuelva a ingresar
+                limpiarPantalla()
+                print("Ingrese una opcion valida")
+        except ValueError: 
+            limpiarPantalla()
+            print("Ingrese un numero valido")
+    #se registra la hora de salida actual con la funcion Ingresar hora 
+    hora_salida=datetime.now().strftime('%H:%M')
+
+    #se almacena el tiempo estimado ingresado por el usuario llamando a la funcion ingresarHora
+    print("Ingrese el tiempo estimado de viaje: ")
+    tiempo_estimado=ingresarHora()
+    #se carga la informacion del camion
+    
+    cargarCamion(camion, placa, origen, destino, hora_salida, tiempo_estimado)
+    #se agrega el camion al listado de camiones 
+    agregarCamion(listado_camiones, camion)
+
+#Definicion de la funcion para modificar la informacion de un camion
+def modificarInformacion(listado_camiones):
+    #variable para corroborar que se haya encontrado el camion
+    encontrado=False
+    #se registra la placa del camion que se desea modificar
+    print("Ingrese la placa del camion a modificar")
+    placa=input("Placa: ")
+    #se recorre el listado de camiones 
+    while(encontrado==False):
+        for i in range (0, tamanioListado(listado_camiones)):
+            #recuperamos los datos del camion
+            camion=recuperarCamion(listado_camiones, i)
+            #Si se encuentra la placa buscada, se le solicita elegir el dato que desea modificar
+            if (verPlaca(camion) == placa):
+                opcion=1
+                limpiarPantalla()
+                #se imprime el menu de opciones 
+                while (opcion!=0):
+                    print("OPCIONES A MODIFICAR")
+                    print("1. Placa")
+                    print("2. Origen")
+                    print("3. Destino")
+                    print("4. Hora de salida")
+                    print("5. Hora de llegada")
+                    print("6. Tiempo estimado de viaje")
+                    print("7. Tiempo real de viaje")
+                    print("0. SALIR DE LA FUNCION MODIFICAR")
+                    #se registra la opcion elegida por el usuario
+                    opcion=int(input("Ingrese la opcion deseada: "))
+
+                    if (opcion==1):
+                        limpiarPantalla()
+                        nPlaca=input("Ingrese la nueva placa: ")
+                        modPlaca(camion, nPlaca)
+                    elif (opcion==2):
+                        limpiarPantalla()
+                        #variable para corroborar que se haya encontrado el origen
+                        bandera=False
+                        #mientras no se haya encontrado el origen se repite el proceso
+                        while (bandera==False):
+                            #se recorre el listado de locaciones 
+                            for i in range (0, len(locaciones)):
+                                #se imprimen todas los posibles puntos de distribucion
+                                print(i+1, ". ", locaciones[i])
+                            #se registra la opcion de origen ingresada por el usuario
+                            origen=int(input("Ingrese el origen deseado: "))
+                            if (origen<=len(locaciones) and origen>0):
+                                #si el origen coincide con alguna de los puntos de distribucion se actualiza la variable de control
+                                bandera=True
+                            else:
+                                #si la opcion es invalida, se solicita que se vuelva a ingresar
+                                limpiarPantalla()
+                                print("Ingrese una opcion valida")     
+                        modOrigen(camion, origen)
+                    elif (opcion==3):
+                        limpiarPantalla()
+                        #variable para corroborar que se haya encontrado el destino
+                        bandera=False
+                        #mientras no se haya encontrado el destino se repite el proceso
+                        while (bandera==False):
+                            #se recorre el listado de locaciones 
+                            for i in range (0, len(locaciones)):
+                                #se imprimen todas los posibles puntos de distribucion
+                                print(i+1, ". ", locaciones[i])
+                            #se registra la opcion de destino ingresada por el usuario
+                            destino=int(input("Ingrese el destino deseado: "))
+                            if (destino<=len(locaciones) and destino>0):
+                                #si el origen coincide con alguna de los puntos de distribucion se actualiza la variable de control
+                                bandera=True
+                            else:
+                                #si la opcion es invalida, se solicita que se vuelva a ingresar
+                                limpiarPantalla()
+                                print("Ingrese una opcion valida")     
+                        modDestino(camion, destino)
+                    elif (opcion==4):
+                        limpiarPantalla()
+                        print("Ingrese los datos de la nueva hora de salida")
+                        nHoraSalida=ingresarHora()
+                        modhSalida(camion, nHoraSalida)
+                    elif (opcion==5):
+                        limpiarPantalla()
+                        print("Ingrese los datos de la nueva hora de llegada")
+                        nHoraLlegada=ingresarHora()
+                        modhLlegada(camion, nHoraLlegada)
+                    elif (opcion==6):
+                        limpiarPantalla()
+                        print("Ingrese los datos del nuevo tiempo estimado de viaje")
+                        nTiempoEstimado=ingresarHora()
+                        modtEstimado(camion, nTiempoEstimado)
+                    elif (opcion==7):
+                        limpiarPantalla()
+                        print("Ingrese los datos del nuevo tiempo real de viaje")
+                        nTiempoReal=ingresarHora()
+                        modtReal(camion, nTiempoReal)
+                    else:
+                        limpiarPantalla()
+                        print("Ingrese una opcion valida")    
+                #se actualiza la variable de control 
+                encontrado=True
+
+        #En caso de no encontrar el camion solicitado se emite un mensaje de notificacion 
+        if (encontrado==False):
+            print("El camion ingresado no se encuentra registrado")
+            print("Por favor vuelva a ingresar la placa")
+            placa=input("Placa: ")
+
+#Definicion de la funcion para eliminar un camion por su placa 
+def eliminarCamionPorPatente(listado_camiones):
+    #variable para corroborar que se haya encontrado el camion
+    encontrado=False
+    #se registra la placa del camion que se desea modificar
+    print("Ingrese la placa del camion a eliminar") 
+    placa=input("Placa: ")
+    while(encontrado==False):
+        #se recorre el listado de camiones
+        i=0
+        while (i < tamanioListado(listado_camiones)):
+            #recuperamos los datos del camion
+            camion=recuperarCamion(listado_camiones, i)
+            #Si se encuentra la placa buscada, se elimina dicho camion 
+            if (verPlaca(camion)==placa):
+                eliminarCamion(listado_camiones, camion)
+                print("Camion eliminado con exito!")
+                #Actualizamos la variable puesto a que se encontro el camion solicitado
+                encontrado=True
+                break
+            else:
+                i+=1
+        #si el camion no se encuntra, se emite un mensaje y se solicita al usuario que ingrese nuevamente la placa
+        if (encontrado==False):
+            print("El camion ingresado no se encuentra registrado")
+            print("Ingrese nuevamente la placa del a eliminar") 
+            #se almacena la nueva placa ingresada por el usuario
+            placa=input("Placa: ")
+
+#Definicion de la funcion para registra la llegada de un camion
+def registrarLlegada(listado_camiones):
+    #variable para corroborar que se haya encontrado el camion
+    encontrado=False
+    #se registra la placa del camion que se desea modificar
+    print("Ingrese la placa del camion")
+    placa=input("Placa: ")
+
+    while (encontrado==False):
+        #se recorre el listado de camiones
+        for i in range (0, tamanioListado(listado_camiones)):
+            #recuperamos los datos del camion
+            camion=recuperarCamion(listado_camiones, i)
+            #Si se encuentra la placa buscada, se registra el horario de llegada con la funcion ingresar hora
+            if (verPlaca(camion)==placa):
+                hLlegada=datetime.now().strftime('%H:%M')
+                #se modifica la hora de llegada con la funcion modificar
+                modhLlegada(camion, hLlegada)
+                hLlegada = datetime.strptime(hLlegada, '%H:%M')
+                hsalida= datetime.strptime(verhSalida(camion), '%H:%M')
+                #se calcula el tiempo real
+                tReal= hLlegada-hsalida
+                #se modifica el tiempo real con la funcion modificar
+                modtReal(camion, tReal)
+                #se actualiza la variable de control
+                encontrado=True
+                print("Llegada registrada con exito")
+                break
+
+        #En caso de no encontrar el camion solicitado se emite un mensaje de notificacion y se solicita que se ingrese nuevamente la placa
+        if (encontrado==False):
+            print("El camion ingresado no se encuentra registrado")
+            print("Ingrese nuevamente la placa del camion arribado")
+            placa=input("Placa: ")
+
+#Definicion de la funcion para listar todos los camiones
+def listarCamiones(listado_camiones):
+    print("======= LISTADO =======")
+    #se recorre el listado de camiones
+    for i in range(0, tamanioListado(listado_camiones)):
+        #recuperamos los datos del camion
+        camion=recuperarCamion(listado_camiones, i)
+        #imprimimos los datos de cada uno de los camiones con la funcion imprimir camion
+        print("Camion N: ", i+1)
+        imprimirCamion(camion)
+        print("\nToque cualquier tecla para proseguir")
+        input()
+        limpiarPantalla()
+
+#FunciÃ³n para generar un informe de movimientos de camiones dentro de un perÃ­odo de tiempo especificado
+def informeDeMovimientos(listado_camiones): 
+    #almacenamos el inicio del periodo ingresado por el usuario con la funcion ingresar hora 
+    print("Ingrese el inicio del periodo")
+    inicioPeriodo=ingresarHora()
+    #almacenamos el inicio del periodo ingresado por el usuario con la funcion ingresar hora 
+    print("Ingrese el final del periodo")
+    finalPeriodo=ingresarHora()
+    # Convertimos las horas a objetos datetime para poder compararlos fÃ¡cilmente
+    
+    print("=======INFORME DE MOVIMIENTOS POR PUNTO DE DISTRIBUCION=======")
+
+    #recorremos el listado de locaciones 
+    for i in range(0, len(locaciones)):
+        #ponemos el contador en cero
+        contador=0
+        #recorremos el listado de camiones 
+        for j in range(0, tamanioListado(listado_camiones)):
+            #recupermos los datos del camion con la funcion recuperar
+            camion=recuperarCamion(listado_camiones, j)
+
+            #dividimos la cadena en horas y minutos
+            hs,ms = map(int, verhSalida(camion).split(':'))
+            #creamos un objeto timedelta basado en las horas y los minutos obtenidos
+            hora_salida= timedelta(hours=hs, minutes=ms)
+            #dividimos la cadena en horas y minutos
+            hl,ml = map(int, verhLlegada(camion).split(':'))
+            #creamos un objeto timedelta basado en las horas y los minutos obtenidos
+            hora_llegada= timedelta(hours=hl, minutes=ml)
+
+            #controlamos que la salida se encuntra en el periodo especificado por el usuario 
+            if ((hora_salida>=inicioPeriodo and hora_salida<=finalPeriodo) or (hora_llegada>=inicioPeriodo and hora_llegada<=finalPeriodo)):
+                #controlamos que el origen o el destino del camion coincidan con el punto i de distribucion
+                if (verOrigen(camion)==i+1 or verDestino(camion)==i+1):
+                    #incrementamos el contador
+                    contador+=1
+        
+        #imprimimos el informe por cada punto de distribucion
+        print("Informe del punto: ", locaciones[i])
+        print("Cantidad de camiones: ", contador)
+                
+#FunciÃ³n para generar un informe de movimientos de camiones dentro del periodo de mayor actividad
+def listarCamionesMayorActividad(listado_camiones):
+    #creamos las variables de inicio y fin de ambos periodos de mayor actividad
+    primerPeriodoInicio=timedelta(hours=8, minutes=0)
+    primerPeriodoFinal=timedelta(hours=12, minutes=0)
+    segundoPeriodoInicio=timedelta(hours=14, minutes=0)
+    segundoPeriodoFinal=timedelta(hours=18, minutes=0)
+
+    #variables de control para verificar si hubo camiones en los periodos
+    existe1=False
+    existe2=False
+
+    print("=====INFORME DE MOVIMIENTOS ENTRE LAS 08:00 Y LAS 12:00=====")
+    #recorremos la lista de camiones
+    for i in range(0, tamanioListado(listado_camiones)):
+        #recuperamos los datos del camion con la funcion recuperar
+        camion=recuperarCamion(listado_camiones, i)
+
+        #dividimos la cadena en horas y minutos
+        hl,ml = map(int, verhLlegada(camion).split(':'))
+        #creamos un objeto timedelta basado en las horas y los minutos obtenidos
+        hora_llegada= timedelta(hours=hl, minutes=ml)
+
+        if (hora_llegada>=primerPeriodoInicio and hora_llegada<=primerPeriodoFinal):
+            #si se cumple la condicion, imprimos los datos del camion con la funcion imprimir camion
+            imprimirCamion(camion)
+            #actualizamos la variable de control 
+            existe1=True
+
+    #si no hubo movimientos de camiones, se notifica con un mensaje  
+    if (existe1==False):
+        print("No hubo movimiento de camiones en ese periodo")
+
+    print("=====INFORME DE MOVIMIENTOS ENTRE LAS 14:00 Y LAS 18:00=====")
+    #recorremos la lista de camiones
+    for i in range(0, tamanioListado(listado_camiones)):
+        #recuperamos los datos del camion con la funcion recuperar
+        camion=recuperarCamion(listado_camiones, i)
+
+        #dividimos la cadena en horas y minutos
+        hl,ml = map(int, verhLlegada(camion).split(':'))
+        #creamos un objeto timedelta basado en las horas y los minutos obtenidos
+        hora_llegada= timedelta(hours=hl, minutes=ml)
+
+        if (hora_llegada>=segundoPeriodoInicio and hora_llegada<=segundoPeriodoFinal):
+            #si se cumple la condicion, imprimos los datos del camion con la funcion imprimir camion
+            imprimirCamion(camion)
+            #actualizamos la variable de control
+            existe2=True
+
+    #si no hubo movimientos de camiones, se notifica con un mensaje
+    if (existe2==False):
+        print("No hubo movimiento de camiones en ese periodo")
+        
+#FunciÃ³n para eliminar camiones despues de un horario establecido 
+def eliminarCamionesDespuesDeHorario (listado_camiones):
+    #variable para corroborar que se haya encontrado el camion 
+    encontrado=False
+    #Se almacena en una variable el horario limite ingresado por el usuario utilizando la funcion ingresarHora
+    print("Ingrese el horario limite de llegada")
+    horarioLimite=ingresarHora()
+    #Se recorre la lista de camiones 
+    i=0
+    while (i < tamanioListado(listado_camiones)):
+        #recuperamos los datos del camion
+        camion=recuperarCamion(listado_camiones, i)
+        
+        #dividimos la cadena en horas y minutos
+        hl,ml = map(int, verhLlegada(camion).split(':'))
+        #creamos un objeto timedelta basado en las horas y los minutos obtenidos
+        hora_llegada= timedelta(hours=hl, minutes=ml)
+
+        #Se compara la hora de llagada del camion con la hora limite ingresada por el usuario
+        if (hora_llegada>horarioLimite): 
+            #Se elimina el camion con la funcion eliminar
+            eliminarCamion(listado_camiones, camion)
+            print("Camion eliminado con exito!")
+            #actualizamos la variable puesto a que se enontro el camion
+            encontrado=True
+            break
+        else:
+            i+=1
+    
+    #si no se encuentran camiones para eliminar lo notificamos 
+    if (encontrado==False):
+        print("No llegaron camiones pasadas las ", horarioLimite)
+
+#FunciÃ³n para crear un listado con los camiones que se hayan retrasado en su recorrido 
+def listadoCamionesConRetraso(listado_camiones):
+    #creamos el listado de camiones que hayan llegado retrasados 
+    listado_camiones_retrasados=crearCola()
+    #se recorre el listado de camiones
+    for i in range(0, tamanioListado(listado_camiones)):
+        #recuperamos los datos del camion
+        camion=recuperarCamion(listado_camiones, i)
+   
+        if(vertReal(camion)>vertEstimado(camion)):
+            #Si se cumple la condicion se encola el camion
+            encolar(listado_camiones_retrasados, camion)
+
+    #Se verifica si el listado se encuentra vacio 
+    if (tamanioCola(listado_camiones_retrasados) == 0):
+        print("No hay camiones retrasados!")
+    #Si no se encuntra vacio, imprimimos su contenido 
+    else: 
+        print("=====LISTADO DE CAMIONES RETRASADOS=====")
+        #creamos una cola auxiliar 
+        aux = crearCola()
+        #copiamos el listado de camiones con retraso a la cola auxiliar
+        copiarCola(aux, listado_camiones_retrasados)
+        #recorremos nuestro listado auxiliar hasta que se enuntre vacio 
+        while not esVacia(aux):
+            #desencolamos un camion 
+            camion = desencolar(aux)
+            #imprimimos los datos del camion 
+            imprimirCamion(camion)
+
+#creamos el listado de camiones 
+listado_camiones=crearListado()
+
+print("==========BIENVENIDO==========")
+#creamos una variable que almacene la opcion elegida por el usuario 
+rta = 1
+#se repite hasta que el usuario ingrese la opcion de salida 
+while (rta != 0):
+    #imprimimos el menu de opciones 
+    print("=====MENU DE OPCIONES=====")
+    print("1. Registrar la salida de un camion")
+    print("2. Modificar la informacion de un camion")
+    print("3. Eliminar camion del listado")
+    print("4. Registrar llegada de un camion")
+    print("5. Listado de camiones")
+    print("6. Informe de movimientos por periodo de horas")
+    print("7. Listado de camiones en horarios de mayor actividad")
+    print("8. Eliminar camiones que llegaron despues de cierto horario")
+    print("9. Generar listado de camiones que tardaron mas del tiempo estimado")
+    print("0. SALIR")
+    print("==========================")
+
+    rta = int(input("Ingrese la opcion deseada: "))
+
+    if (rta==1):
+        limpiarPantalla()
+        salidaDeCamion(listado_camiones)
+    elif (rta==2):
+        limpiarPantalla()
+        modificarInformacion(listado_camiones)
+    elif (rta==3):
+        limpiarPantalla()
+        eliminarCamionPorPatente(listado_camiones)
+    elif (rta==4):
+        limpiarPantalla()
+        registrarLlegada(listado_camiones)
+    elif (rta==5):
+        limpiarPantalla()
+        listarCamiones(listado_camiones)
+    elif (rta==6):
+        limpiarPantalla()
+        informeDeMovimientos(listado_camiones)
+    elif (rta==7):
+        limpiarPantalla()
+        listarCamionesMayorActividad(listado_camiones)
+    elif (rta==8):
+        limpiarPantalla()
+        eliminarCamionesDespuesDeHorario(listado_camiones)
+    elif (rta==9):
+        limpiarPantalla()
+        listadoCamionesConRetraso(listado_camiones)
+    elif (rta==0):
+        print("Cerrando programa...")
+    else:
+        print("Opcion invalida, intente de nuevo")
